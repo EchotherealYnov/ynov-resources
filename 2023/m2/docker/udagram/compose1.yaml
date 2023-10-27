@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  reverseproxy:
+    image: registry/reverseproxy:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - udagram-db
+      - backend-user
+      - backend-feed
+    networks:
+      - udagram
+
+  backend-user:
+    image: registry/backend-user:latest
+    environment:
+      - POSTGRES_USERNAME=root
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=udagramdb
+      - POSTGRES_HOST=udagramdb
+      - AWS_REGION=us-east-1
+      - AWS_PROFILE=default
+      - AWS_BUCKET=udagram-bucket-1234567
+      - JWT_SECRET=hello
+      - URL=http://localhost:8100
+    depends_on:
+      - udagram-db
+    networks:
+      - udagram
+
+  backend-feed:
+    image: registry/backend-feed:latest
+    environment:
+      - POSTGRES_USERNAME=root
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=udagramdb
+      - POSTGRES_HOST=udagramdb
+      - AWS_REGION=us-east-1
+      - AWS_PROFILE=default
+      - AWS_BUCKET=udagram-bucket-1234567
+      - JWT_SECRET=hello
+      - URL=http://localhost:8100
+    depends_on:
+      - udagram-db
+    networks:
+      - udagram
+
+  udagram-db:
+    image: registry/postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=root
+      - POSTGRES_DB=udagramdb
+    networks:
+      - udagram
+
+  networks:
+    udagram:
+      driver: bridge
